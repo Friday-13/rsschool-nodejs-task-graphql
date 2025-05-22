@@ -4,7 +4,7 @@ import { UUIDType } from './uuid.js';
 import postType from './post.js';
 import memberType, { memberTypeId } from './member.js';
 import profileType from './profile.js';
-import userType from './user.js';
+import userType, { TUser } from './user.js';
 
 const queryType = new GraphQLObjectType({
   name: 'query',
@@ -95,7 +95,7 @@ const queryType = new GraphQLObjectType({
     },
 
     user: {
-      type: userType,
+      type: userType as GraphQLObjectType<TUser, PrismaClient>,
       resolve: async (_source, { id }: { id: string }, context: PrismaClient) => {
         const user = context.user.findUnique({
           where: {
