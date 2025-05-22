@@ -16,7 +16,7 @@ import { UUIDType } from './uuid.js';
 import { memberTypeId } from './member.js';
 import { createProfileSchema } from '../../profiles/schemas.js';
 import postType from './post.js';
-import { createPostSchema } from '../../posts/schemas.js';
+import { changePostByIdSchema, createPostSchema } from '../../posts/schemas.js';
 
 type TCreateUser = Static<typeof createUserSchema.body>;
 
@@ -67,6 +67,19 @@ const createPostInputType = new GraphQLInputObjectType({
   },
 });
 
+type TChangePost = Static<typeof changePostByIdSchema.body>;
+const changePostInputType = new GraphQLInputObjectType({
+  name: 'ChangePostInput',
+  fields: {
+    title: {
+      type: GraphQLString,
+    },
+    content: {
+      type: GraphQLString,
+    },
+  },
+});
+
 const mutationType = new GraphQLObjectType({
   name: 'mutation',
   fields: {
@@ -111,13 +124,36 @@ const mutationType = new GraphQLObjectType({
       type: new GraphQLNonNull(postType),
       resolve: async (_source, { dto }: { dto: TCreatePost }, context) => {
         const post = await context.post.create({
-          data: dto
+          data: dto,
         });
         return post;
       },
       args: {
         dto: {
           type: new GraphQLNonNull(createPostInputType),
+        },
+      },
+    },
+
+    changePost: {
+      type: new GraphQLNonNull(postType),
+      resolve: async (
+        _source,
+        { id, dto }: { id: string; dto: TChangePost },
+        context,
+      ) => {
+        const post = await context.post.update({
+          where: { id: id },
+          data: dto,
+        });
+        return post;
+      },
+      args: {
+        id: {
+          type: new GraphQLNonNull(UUIDType),
+        },
+        dto: {
+          type: new GraphQLNonNull(changePostInputType),
         },
       },
     },
