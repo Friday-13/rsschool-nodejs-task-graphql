@@ -15,6 +15,8 @@ import profileType from './profile.js';
 import { UUIDType } from './uuid.js';
 import { memberTypeId } from './member.js';
 import { createProfileSchema } from '../../profiles/schemas.js';
+import postType from './post.js';
+import { createPostSchema } from '../../posts/schemas.js';
 
 type TCreateUser = Static<typeof createUserSchema.body>;
 
@@ -31,7 +33,6 @@ const createUserInputType = new GraphQLInputObjectType({
 });
 
 type TCreateProfile = Static<typeof createProfileSchema.body>;
-
 const createProfileInputType = new GraphQLInputObjectType({
   name: 'CreateProfileInput',
   fields: {
@@ -46,6 +47,22 @@ const createProfileInputType = new GraphQLInputObjectType({
     },
     memberTypeId: {
       type: new GraphQLNonNull(memberTypeId),
+    },
+  },
+});
+
+type TCreatePost = Static<typeof createPostSchema.body>;
+const createPostInputType = new GraphQLInputObjectType({
+  name: 'CreatePostInput',
+  fields: {
+    title: {
+      type: new GraphQLNonNull(GraphQLString),
+    },
+    content: {
+      type: new GraphQLNonNull(GraphQLString),
+    },
+    authorId: {
+      type: new GraphQLNonNull(UUIDType),
     },
   },
 });
@@ -70,7 +87,7 @@ const mutationType = new GraphQLObjectType({
       },
       args: {
         dto: {
-          type: createUserInputType,
+          type: new GraphQLNonNull(createUserInputType),
         },
       },
     },
@@ -78,14 +95,29 @@ const mutationType = new GraphQLObjectType({
     createProfile: {
       type: new GraphQLNonNull(profileType),
       resolve: async (_source, { dto }: { dto: TCreateProfile }, context) => {
-        const profile = context.profile.create({
+        const profile = await context.profile.create({
           data: dto,
         });
         return profile;
       },
       args: {
         dto: {
-          type: createProfileInputType,
+          type: new GraphQLNonNull(createProfileInputType),
+        },
+      },
+    },
+
+    createPost: {
+      type: new GraphQLNonNull(postType),
+      resolve: async (_source, { dto }: { dto: TCreatePost }, context) => {
+        const post = await context.post.create({
+          data: dto
+        });
+        return post;
+      },
+      args: {
+        dto: {
+          type: new GraphQLNonNull(createPostInputType),
         },
       },
     },
