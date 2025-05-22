@@ -1,4 +1,4 @@
-import { FastifyPluginAsyncTypebox, Type } from '@fastify/type-provider-typebox';
+        import { FastifyPluginAsyncTypebox, Type } from '@fastify/type-provider-typebox';
 import {
   changeProfileByIdSchema,
   createProfileSchema,

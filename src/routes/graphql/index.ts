@@ -9,6 +9,7 @@ import postType from './types/post.js';
 import memberType from './types/member.js';
 import profileType from './types/profile.js';
 import userType from './types/user.js';
+import mutationType from './types/mutation.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { prisma } = fastify;
@@ -35,6 +36,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
 const schema = new GraphQLSchema({
   query: queryType,
+  mutation: mutationType,
   types: [postType, memberType, profileType, userType],
 });
 
