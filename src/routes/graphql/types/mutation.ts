@@ -109,6 +109,7 @@ const changeUserInputType = new GraphQLInputObjectType({
   },
 });
 
+
 const mutationType = new GraphQLObjectType({
   name: 'mutation',
   fields: {
@@ -257,6 +258,60 @@ const mutationType = new GraphQLObjectType({
       },
       args: {
         id: {
+          type: new GraphQLNonNull(UUIDType),
+        },
+      },
+    },
+
+    subscribeTo: {
+      type: new GraphQLNonNull(GraphQLString),
+      resolve: async (
+        _source,
+        { userId, authorId }: { userId: string; authorId: string },
+        context,
+      ) => {
+        const res = await context.subscribersOnAuthors.create({
+          data: {
+            authorId: authorId,
+            subscriberId: userId,
+          },
+        });
+        if (res) return 'OK';
+        return 'FAIL';
+      },
+      args: {
+        userId: {
+          type: new GraphQLNonNull(UUIDType),
+        },
+        authorId: {
+          type: new GraphQLNonNull(UUIDType),
+        },
+      },
+    },
+
+    unsubscribeFrom: {
+      type: new GraphQLNonNull(GraphQLString),
+      resolve: async (
+        _source,
+        { userId, authorId }: { userId: string; authorId: string },
+        context,
+      ) => {
+        const res = await context.subscribersOnAuthors.delete({
+          where: {
+            subscriberId_authorId: {
+              authorId: authorId,
+              subscriberId: userId,
+            },
+          },
+        });
+        if (res) return 'OK';
+        return 'FAIL';
+      },
+      args: {
+        userId: {
+          type: new GraphQLNonNull(UUIDType),
+        },
+        authorId: {
           type: new GraphQLNonNull(UUIDType),
         },
       },
