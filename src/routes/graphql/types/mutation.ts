@@ -10,11 +10,11 @@ import {
 import userType from './user.js';
 import { PrismaClient } from '@prisma/client';
 import { Static } from '@sinclair/typebox';
-import { createUserSchema } from '../../users/schemas.js';
+import { changeUserByIdSchema, createUserSchema } from '../../users/schemas.js';
 import profileType from './profile.js';
 import { UUIDType } from './uuid.js';
 import { memberTypeId } from './member.js';
-import { createProfileSchema } from '../../profiles/schemas.js';
+import { changeProfileByIdSchema, createProfileSchema } from '../../profiles/schemas.js';
 import postType from './post.js';
 import { changePostByIdSchema, createPostSchema } from '../../posts/schemas.js';
 
@@ -76,6 +76,35 @@ const changePostInputType = new GraphQLInputObjectType({
     },
     content: {
       type: GraphQLString,
+    },
+  },
+});
+
+type TChangeProfile = Static<typeof changeProfileByIdSchema.body>;
+const changeProfileInputType = new GraphQLInputObjectType({
+  name: 'ChangeProfileInput',
+  fields: {
+    isMale: {
+      type: GraphQLBoolean,
+    },
+    yearOfBirth: {
+      type: GraphQLInt,
+    },
+    memberTypeId: {
+      type: memberTypeId,
+    },
+  },
+});
+
+type TChangeUser = Static<typeof changeUserByIdSchema.body>;
+const changeUserInputType = new GraphQLInputObjectType({
+  name: 'ChangeUserInput',
+  fields: {
+    name: {
+      type: GraphQLString,
+    },
+    balance: {
+      type: GraphQLFloat,
     },
   },
 });
@@ -154,6 +183,46 @@ const mutationType = new GraphQLObjectType({
         },
         dto: {
           type: new GraphQLNonNull(changePostInputType),
+        },
+      },
+    },
+
+    changeProfile: {
+      type: new GraphQLNonNull(profileType),
+      resolve: async (
+        _source,
+        { id, dto }: { id: string; dto: TChangeProfile },
+        context,
+      ) => {
+        const profile = await context.profile.update({ where: { id: id }, data: dto });
+        return profile;
+      },
+      args: {
+        id: {
+          type: new GraphQLNonNull(UUIDType),
+        },
+        dto: {
+          type: new GraphQLNonNull(changeProfileInputType),
+        },
+      },
+    },
+
+    changeUser: {
+      type: new GraphQLNonNull(userType),
+      resolve: async (
+        _source,
+        { id, dto }: { id: 'string'; dto: TChangeUser },
+        context,
+      ) => {
+        const user = await context.user.update({ where: { id: id }, data: dto });
+        return user;
+      },
+      args: {
+        id: {
+          type: new GraphQLNonNull(UUIDType),
+        },
+        dto: {
+          type: new GraphQLNonNull(changeUserInputType),
         },
       },
     },
