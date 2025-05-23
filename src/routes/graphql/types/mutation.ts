@@ -226,6 +226,38 @@ const mutationType = new GraphQLObjectType({
         },
       },
     },
+
+    deleteUser: {
+      type: new GraphQLNonNull(GraphQLString),
+      resolve: async (_source, { id }: { id: string }, context) => {
+        const user = await context.user.delete({ where: { id: id } });
+        if (user) return 'OK';
+        return 'FAIL';
+      },
+      args: {
+        id: {
+          type: new GraphQLNonNull(UUIDType),
+        },
+      },
+    },
+
+    deletePost: {
+      type: new GraphQLNonNull(UUIDType),
+      resolve: async (_source, { id }: { id: string }, context) => {
+        const post = await context.post.delete({ where: { id: id } });
+        if (post) return 'OK';
+        return 'FAIL';
+      },
+    },
+
+    deleteProfile: {
+      type: new GraphQLNonNull(UUIDType),
+      resolve: async (_source, { id }: { id: string }, context) => {
+        const profile = await context.profile.delete({ where: { id: id } });
+        if (profile) return 'OK';
+        return 'FAIL';
+      },
+    },
   },
 });
 
