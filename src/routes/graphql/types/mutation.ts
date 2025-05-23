@@ -21,7 +21,7 @@ import { changePostByIdSchema, createPostSchema } from '../../posts/schemas.js';
 type TCreateUser = Static<typeof createUserSchema.body>;
 
 const createUserInputType = new GraphQLInputObjectType({
-  name: 'CreateUserInut',
+  name: 'CreateUserInput',
   fields: {
     name: {
       type: new GraphQLNonNull(GraphQLString),
@@ -112,13 +112,6 @@ const changeUserInputType = new GraphQLInputObjectType({
 const mutationType = new GraphQLObjectType({
   name: 'mutation',
   fields: {
-    hello: {
-      type: GraphQLString,
-      resolve: () => {
-        return 'Hello world';
-      },
-    },
-
     createUser: {
       type: new GraphQLNonNull(userType),
       resolve: async (_source, { dto }: { dto: TCreateUser }, context: PrismaClient) => {
@@ -242,20 +235,30 @@ const mutationType = new GraphQLObjectType({
     },
 
     deletePost: {
-      type: new GraphQLNonNull(UUIDType),
+      type: new GraphQLNonNull(GraphQLString),
       resolve: async (_source, { id }: { id: string }, context) => {
         const post = await context.post.delete({ where: { id: id } });
         if (post) return 'OK';
         return 'FAIL';
       },
+      args: {
+        id: {
+          type: new GraphQLNonNull(UUIDType),
+        },
+      },
     },
 
     deleteProfile: {
-      type: new GraphQLNonNull(UUIDType),
+      type: new GraphQLNonNull(GraphQLString),
       resolve: async (_source, { id }: { id: string }, context) => {
         const profile = await context.profile.delete({ where: { id: id } });
         if (profile) return 'OK';
         return 'FAIL';
+      },
+      args: {
+        id: {
+          type: new GraphQLNonNull(UUIDType),
+        },
       },
     },
   },
