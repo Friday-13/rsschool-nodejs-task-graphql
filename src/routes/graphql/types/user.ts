@@ -1,11 +1,16 @@
-import { GraphQLFloat, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLString } from "graphql";
-import { UUIDType } from "./uuid.js";
-import { PrismaClient } from "@prisma/client";
-import postType from "./post.js";
-import profileType from "./profile.js";
-import { Static } from "@sinclair/typebox";
-import { userSchema } from "../../users/schemas.js";
-import { TContext } from "../index.js";
+import {
+  GraphQLFloat,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLString,
+} from 'graphql';
+import { UUIDType } from './uuid.js';
+import profileType from './profile.js';
+import { Static } from '@sinclair/typebox';
+import { userSchema } from '../../users/schemas.js';
+import { TContext } from '../loaders/create-context.js';
+import postType from './post.js';
 
 export type TUser = Static<typeof userSchema>;
 
@@ -24,52 +29,29 @@ const userType = new GraphQLObjectType<TUser, TContext>({
     },
     profile: {
       type: profileType,
-      resolve: async (user, _args, context) => {
-        return context.profileLoader.load(user.id);
+      resolve: async (user, _args, { profileLoader }) => {
+        return profileLoader.load(user.id);
       },
     },
-  //   posts: {
-  //     type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(postType))),
-  //     resolve: async (user, _args, context) => {
-  //       const posts = context.post.findMany({
-  //         where: {
-  //           authorId: user.id,
-  //         },
-  //       });
-  //       return posts;
-  //     },
-  //   },
-  //   userSubscribedTo: {
-  //     type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(userType))),
-  //     resolve: async (user, _args, context) => {
-  //       const users = context.user.findMany({
-  //         where: {
-  //           subscribedToUser: {
-  //             some: {
-  //               subscriberId: user.id,
-  //             },
-  //           },
-  //         },
-  //       });
-  //       return users;
-  //     },
-  //   },
-  //   subscribedToUser: {
-  //     type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(userType))),
-  //     resolve: async (user, _args, context) => {
-  //       const users = context.user.findMany({
-  //         where: {
-  //           userSubscribedTo: {
-  //             some: {
-  //               authorId: user.id,
-  //             },
-  //           },
-  //         },
-  //       });
-  //       return users;
-  //     },
-  //   },
+    posts: {
+      type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(postType))),
+      resolve: async (user, _args, { postLoader }) => {
+        return await postLoader.load(user.id);
+      },
+    },
+    userSubscribedTo: {
+      type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(userType))),
+      resolve: async (user, _args, { userSubscribedToLoader }) => {
+        return await userSubscribedToLoader.load(user.id);
+      },
+    },
+    subscribedToUser: {
+      type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(userType))),
+      resolve: async (user, _args, { subscribedToUserLoader }) => {
+        return await subscribedToUserLoader.load(user.id);
+      },
+    },
   }),
 });
 
-export {userType as default}
+export { userType as default };

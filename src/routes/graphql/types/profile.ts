@@ -1,14 +1,13 @@
-import { GraphQLBoolean, GraphQLInt, GraphQLNonNull, GraphQLObjectType } from "graphql";
-import { UUIDType } from "./uuid.js";
-import memberType from "./member.js";
-import { PrismaClient } from "@prisma/client";
-import { Static } from "@sinclair/typebox";
-import { profileSchema } from "../../profiles/schemas.js";
+import { GraphQLBoolean, GraphQLInt, GraphQLNonNull, GraphQLObjectType } from 'graphql';
+import { UUIDType } from './uuid.js';
+import memberType from './member.js';
+import { Static } from '@sinclair/typebox';
+import { profileSchema } from '../../profiles/schemas.js';
+import { TContext } from '../loaders/create-context.js';
 
 type TProfile = Static<typeof profileSchema>;
 
-
-const profileType = new GraphQLObjectType<TProfile, PrismaClient>({
+const profileType = new GraphQLObjectType<TProfile, TContext>({
   name: 'Profile',
   description: 'Profile',
   fields: () => ({
@@ -23,16 +22,11 @@ const profileType = new GraphQLObjectType<TProfile, PrismaClient>({
     },
     memberType: {
       type: new GraphQLNonNull(memberType),
-      resolve: async (profile, _args, context) => {
-        const memberType = await context.memberType.findUnique({
-          where: {
-            id: profile.memberTypeId,
-          },
-        });
-        return memberType;
+      resolve: async (profile, _args, { memberTypeLoader }) => {
+        return (await memberTypeLoader.load(profile.memberTypeId))
       },
     },
   }),
 });
 
-export {profileType as default}
+export { profileType as default };

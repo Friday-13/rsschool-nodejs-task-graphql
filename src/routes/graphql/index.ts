@@ -8,32 +8,7 @@ import profileType from './types/profile.js';
 import userType from './types/user.js';
 import mutationType from './types/mutation.js';
 import depthLimit from 'graphql-depth-limit';
-import { PrismaClient, Profile } from '@prisma/client';
-import DataLoader from 'dataloader';
-
-const createSuperPuperContext = (prisma: PrismaClient) => {
-  return {
-    prisma,
-    // userLoader: new DataLoader(async (userIds) => {
-    //   console.log('========================');
-    //   console.log('batch fetch');
-    //   console.log('========================');
-    //   const users = await prisma.user.findMany({ where: { id: { in: userIds } } });
-    //   return userIds.map((id) => users.find((user) => user.id === id));
-    // }),
-    profileLoader: new DataLoader<string, Profile | null>(async (userIds) => {
-      const profiles = await prisma.profile.findMany({
-        where: { userId: { in: [...userIds] } },
-      });
-      return userIds.map((id) => {
-        const match = profiles.find((p) => p.userId === id);
-        return match ?? null;
-      });
-    }),
-  };
-};
-
-export type TContext = ReturnType<typeof createSuperPuperContext>;
+import { createContext } from './loaders/create-context.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { prisma } = fastify;
@@ -53,11 +28,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         return { errors: validatonErrors };
       }
       return graphql({
+        contextValue: createContext(prisma),
         schema,
         source,
         variableValues: req.body.variables,
-        // contextValue: prisma,
-        contextValue: createSuperPuperContext(prisma),
       });
     },
   });
