@@ -5,10 +5,11 @@ import postType from "./post.js";
 import profileType from "./profile.js";
 import { Static } from "@sinclair/typebox";
 import { userSchema } from "../../users/schemas.js";
+import { TContext } from "../index.js";
 
 export type TUser = Static<typeof userSchema>;
 
-const userType = new GraphQLObjectType<TUser, PrismaClient>({
+const userType = new GraphQLObjectType<TUser, TContext>({
   name: 'User',
   description: 'User',
   fields: () => ({
@@ -24,55 +25,50 @@ const userType = new GraphQLObjectType<TUser, PrismaClient>({
     profile: {
       type: profileType,
       resolve: async (user, _args, context) => {
-        const profile = await context.profile.findUnique({
-          where: {
-            userId: user.id,
-          },
-        });
-        return profile;
+        return context.profileLoader.load(user.id);
       },
     },
-    posts: {
-      type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(postType))),
-      resolve: async (user, _args, context) => {
-        const posts = context.post.findMany({
-          where: {
-            authorId: user.id,
-          },
-        });
-        return posts;
-      },
-    },
-    userSubscribedTo: {
-      type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(userType))),
-      resolve: async (user, _args, context) => {
-        const users = context.user.findMany({
-          where: {
-            subscribedToUser: {
-              some: {
-                subscriberId: user.id,
-              },
-            },
-          },
-        });
-        return users;
-      },
-    },
-    subscribedToUser: {
-      type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(userType))),
-      resolve: async (user, _args, context) => {
-        const users = context.user.findMany({
-          where: {
-            userSubscribedTo: {
-              some: {
-                authorId: user.id,
-              },
-            },
-          },
-        });
-        return users;
-      },
-    },
+  //   posts: {
+  //     type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(postType))),
+  //     resolve: async (user, _args, context) => {
+  //       const posts = context.post.findMany({
+  //         where: {
+  //           authorId: user.id,
+  //         },
+  //       });
+  //       return posts;
+  //     },
+  //   },
+  //   userSubscribedTo: {
+  //     type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(userType))),
+  //     resolve: async (user, _args, context) => {
+  //       const users = context.user.findMany({
+  //         where: {
+  //           subscribedToUser: {
+  //             some: {
+  //               subscriberId: user.id,
+  //             },
+  //           },
+  //         },
+  //       });
+  //       return users;
+  //     },
+  //   },
+  //   subscribedToUser: {
+  //     type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(userType))),
+  //     resolve: async (user, _args, context) => {
+  //       const users = context.user.findMany({
+  //         where: {
+  //           userSubscribedTo: {
+  //             some: {
+  //               authorId: user.id,
+  //             },
+  //           },
+  //         },
+  //       });
+  //       return users;
+  //     },
+  //   },
   }),
 });
 

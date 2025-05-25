@@ -89,28 +89,28 @@ const queryType = new GraphQLObjectType({
     users: {
       type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(userType))),
       resolve: async (_source, _args, context: PrismaClient) => {
-        const users = context.user.findMany();
+        const users = context.prisma.user.findMany();
         return users;
       },
     },
-
-    user: {
-      type: userType as GraphQLObjectType<TUser, PrismaClient>,
-      resolve: async (_source, { id }: { id: string }, context: PrismaClient) => {
-        const user = context.user.findUnique({
-          where: {
-            id: id,
-          },
-        });
-        return user;
-      },
-      args: {
-        id: {
-          type: new GraphQLNonNull(UUIDType),
-          description: 'User uuid',
-        },
-      },
-    },
+  //
+  //   user: {
+  //     type: userType as GraphQLObjectType<TUser, PrismaClient>,
+  //     resolve: async (_source, { id }: { id: string }, context: PrismaClient) => {
+  //       const user = context.user.findUnique({
+  //         where: {
+  //           id: id,
+  //         },
+  //       });
+  //       return user;
+  //     },
+  //     args: {
+  //       id: {
+  //         type: new GraphQLNonNull(UUIDType),
+  //         description: 'User uuid',
+  //       },
+  //     },
+  //   },
   },
 });
 
