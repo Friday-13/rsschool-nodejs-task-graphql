@@ -73,6 +73,16 @@ export const createContext = (prisma: PrismaClient) => {
         return match.map((m) => m.subscriber) ?? null;
       });
     }),
+
+    usersLoader: new DataLoader<string, User[]>(async (userIds) => {
+      const users = await prisma.user.findMany({
+        where: {id : { in: [...userIds] } },
+      });
+      return userIds.map((id) => {
+        const match = users.filter((uuser) => uuser.id === id);
+        return match ?? null;
+      });
+    })
   };
 };
 
