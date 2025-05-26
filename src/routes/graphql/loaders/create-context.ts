@@ -3,6 +3,7 @@ import { createPostLoader } from './create-post-loader.js';
 import { createMemberTypeLoader } from './create-member-type-loader.js';
 import { createSubscribedToUserLoader } from './create-subscribed-to-user-loader.js';
 import { PrismaClient } from '@prisma/client';
+import { createUserSubscribedToLoader } from './creat-user-subscribed-to-loader.js';
 
 export const createContext = (prisma: PrismaClient) => {
   return {
@@ -10,18 +11,8 @@ export const createContext = (prisma: PrismaClient) => {
     profileLoader: createProfileLoader(prisma),
     postLoader: createPostLoader(prisma),
     memberTypeLoader: createMemberTypeLoader(prisma),
-    userSubscribedToLoader: createSubscribedToUserLoader(prisma),
+    userSubscribedToLoader: createUserSubscribedToLoader(prisma),
     subscribedToUserLoader: createSubscribedToUserLoader(prisma),
-
-    // usersLoader: new DataLoader<string, User[]>(async (userIds) => {
-    //   const users = await prisma.user.findMany({
-    //     where: {id : { in: [...userIds] } },
-    //   });
-    //   return userIds.map((id) => {
-    //     const match = users.filter((uuser) => uuser.id === id);
-    //     return match ?? null;
-    //   });
-    // })
   };
 };
 
