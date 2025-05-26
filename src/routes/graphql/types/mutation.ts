@@ -1,113 +1,20 @@
 import {
-  GraphQLBoolean,
-  GraphQLFloat,
-  GraphQLInputObjectType,
-  GraphQLInt,
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLString,
 } from 'graphql';
 import userType from './user.js';
-import { Static } from '@sinclair/typebox';
-import { changeUserByIdSchema, createUserSchema } from '../../users/schemas.js';
 import profileType from './profile.js';
 import { UUIDType } from './uuid.js';
-import { memberTypeId } from './member.js';
-import { changeProfileByIdSchema, createProfileSchema } from '../../profiles/schemas.js';
 import postType from './post.js';
-import { changePostByIdSchema, createPostSchema } from '../../posts/schemas.js';
 import { TContext } from '../loaders/create-context.js';
+import { TCreateUser, createUserInputType } from './inputs/create-user.js';
+import { TCreateProfile, createProfileInputType } from './inputs/create-profile.js';
+import { TCreatePost, createPostInputType } from './inputs/create-post.js';
+import { TChangePost, changePostInputType } from './inputs/change-post.js';
+import { TChangeProfile, changeProfileInputType } from './inputs/change-profile.js';
+import { TChangeUser, changeUserInputType } from './inputs/change-user.js';
 
-type TCreateUser = Static<typeof createUserSchema.body>;
-
-const createUserInputType = new GraphQLInputObjectType({
-  name: 'CreateUserInput',
-  fields: {
-    name: {
-      type: new GraphQLNonNull(GraphQLString),
-    },
-    balance: {
-      type: new GraphQLNonNull(GraphQLFloat),
-    },
-  },
-});
-
-type TCreateProfile = Static<typeof createProfileSchema.body>;
-const createProfileInputType = new GraphQLInputObjectType({
-  name: 'CreateProfileInput',
-  fields: {
-    isMale: {
-      type: new GraphQLNonNull(GraphQLBoolean),
-    },
-    yearOfBirth: {
-      type: new GraphQLNonNull(GraphQLInt),
-    },
-    userId: {
-      type: new GraphQLNonNull(UUIDType),
-    },
-    memberTypeId: {
-      type: new GraphQLNonNull(memberTypeId),
-    },
-  },
-});
-
-type TCreatePost = Static<typeof createPostSchema.body>;
-const createPostInputType = new GraphQLInputObjectType({
-  name: 'CreatePostInput',
-  fields: {
-    title: {
-      type: new GraphQLNonNull(GraphQLString),
-    },
-    content: {
-      type: new GraphQLNonNull(GraphQLString),
-    },
-    authorId: {
-      type: new GraphQLNonNull(UUIDType),
-    },
-  },
-});
-
-type TChangePost = Static<typeof changePostByIdSchema.body>;
-const changePostInputType = new GraphQLInputObjectType({
-  name: 'ChangePostInput',
-  fields: {
-    title: {
-      type: GraphQLString,
-    },
-    content: {
-      type: GraphQLString,
-    },
-  },
-});
-
-type TChangeProfile = Static<typeof changeProfileByIdSchema.body>;
-const changeProfileInputType = new GraphQLInputObjectType({
-  name: 'ChangeProfileInput',
-  fields: {
-    isMale: {
-      type: GraphQLBoolean,
-    },
-    yearOfBirth: {
-      type: GraphQLInt,
-    },
-    memberTypeId: {
-      type: memberTypeId,
-    },
-  },
-});
-
-type TChangeUser = Static<typeof changeUserByIdSchema.body>;
-const changeUserInputType = new GraphQLInputObjectType({
-  name: 'ChangeUserInput',
-  fields: {
-    name: {
-      type: GraphQLString,
-    },
-    balance: {
-      type: GraphQLFloat,
-    },
-  },
-});
 
 const mutationType = new GraphQLObjectType<undefined, TContext>({
   name: 'mutation',

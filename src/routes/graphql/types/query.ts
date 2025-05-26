@@ -1,12 +1,12 @@
 import { PrismaClient, User } from '@prisma/client';
-import { GraphQLList, GraphQLNonNull, GraphQLObjectType, Kind } from 'graphql';
+import { GraphQLList, GraphQLNonNull, GraphQLObjectType } from 'graphql';
 import { UUIDType } from './uuid.js';
 import postType from './post.js';
 import memberType, { memberTypeId } from './member.js';
 import profileType from './profile.js';
 import userType, { TUser } from './user.js';
 import { TContext } from '../loaders/create-context.js';
-import { parseResolveInfo } from 'graphql-parse-resolve-info';
+import isQueryContainField from '../is-query-contain-field.js';
 
 const queryType = new GraphQLObjectType<undefined, TContext>({
   name: 'query',
@@ -92,30 +92,24 @@ const queryType = new GraphQLObjectType<undefined, TContext>({
         { prisma, userSubscribedToLoader, subscribedToUserLoader },
         info,
       ) => {
-        const isContainField = (fieldName: string) => {
-          const selections = info.fieldNodes[0].selectionSet?.selections;
-          return selections?.some((selection) => {
-            if (selection.kind === Kind.FIELD) {
-              return selection.name.value === fieldName;
-            }
-            return false;
-          });
-        };
+        const isContainUserSubscribedTo = isQueryContainField(info, 'userSubscribedTo');
+
+        const isContainSubscribedToUser = isQueryContainField(info, 'subscribedToUser');
         const users = await prisma.user.findMany({
           include: {
-            userSubscribedTo: isContainField('userSubscribedTo'),
-            subscribedToUser: isContainField('subscribedToUser'),
+            userSubscribedTo: isContainUserSubscribedTo,
+            subscribedToUser: isContainSubscribedToUser,
           },
         });
 
         for (const user of users) {
-          if (isContainField('subscribedToUser')) {
+          if (isContainSubscribedToUser) {
             const subscribers = user.subscribedToUser.map((sub) =>
               users.find((u) => u.id === sub.subscriberId),
             );
             subscribedToUserLoader.prime(user.id, subscribers as User[]);
           }
-          if (isContainField('userSubscribedTo')) {
+          if (isContainUserSubscribedTo) {
             const authors = user.userSubscribedTo.map((auth) =>
               users.find((u) => u.id === auth.authorId),
             );
